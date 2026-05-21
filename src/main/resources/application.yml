@@ -1,0 +1,82 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: code-review-agent
+  datasource:
+    url: jdbc:mysql://localhost:3306/code_review_agent?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false
+    username: root
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 20
+      idle-timeout: 300000
+      max-lifetime: 1200000
+      connection-timeout: 30000
+
+mybatis-plus:
+  mapper-locations: classpath*:/mapper/**/*.xml
+  global-config:
+    db-config:
+      id-type: auto
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+# 大模型配置
+llm:
+  provider: deepseek          # deepseek / qwen / openai / zhipu
+  api-key: ${LLM_API_KEY:your-api-key}
+  api-endpoint: ${LLM_ENDPOINT:https://api.deepseek.com/v1}
+  model: deepseek-chat
+  temperature: 0.1
+  max-tokens: 4096
+  timeout-seconds: 120
+  max-retry: 2
+
+# Embedding模型配置
+embedding:
+  provider: local              # local / api
+  api-endpoint: ${EMBEDDING_ENDPOINT:http://localhost:8000}
+  api-key: ${EMBEDDING_API_KEY:}
+  model: bge-large-zh
+  dimension: 1024
+  timeout-seconds: 60
+
+# 向量数据库配置
+vector-store:
+  type: mysql                  # mysql / pgvector / milvus
+  milvus:
+    host: localhost
+    port: 19530
+
+# RAG配置
+rag:
+  chunk-size: 500              # 分块大小(tokens)
+  chunk-overlap: 80            # 重叠大小(tokens)
+  vector-recall-topk: 20       # 向量召回数量
+  keyword-recall-topk: 10      # 关键词召回数量
+  final-topk: 5                # 最终注入数量
+  similarity-threshold: 0.65   # 相似度阈值
+  fusion-weight-vector: 0.5    # 向量融合权重
+  fusion-weight-keyword: 0.3   # 关键词融合权重
+  fusion-weight-tag: 0.2       # 标签融合权重
+
+# 线程池配置
+async:
+  core-pool-size: 4
+  max-pool-size: 8
+  queue-capacity: 200
+  keep-alive-seconds: 60
+  task-timeout-minutes: 10
+
+# 审查配置
+review:
+  max-code-length: 50000       # 单次审查最大字符数
+  code-chunk-size: 8000        # 大代码分片大小
+  default-language: Java
